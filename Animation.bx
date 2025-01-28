@@ -1,4 +1,4 @@
-component accessors=true {
+class {
   property name="matrix";
   property name="mode" default="frames";
   property name="loop" default="1";
@@ -11,7 +11,7 @@ component accessors=true {
     setFrames( [] )
     
     if( fileExists( animationPath ) ) {
-      var fileContents = listToArray( fileRead( animationPath ), chr( 10 ) )
+      var fileContents = listToArray( fileRead( animationPath ), char( 10 ) )
       var i = 0
       while( ++i <= fileContents.len() ) {
         var line = fileContents[ i ]
@@ -25,16 +25,16 @@ component accessors=true {
           setDelay( val( value ) )
         } else if( cmd == 'frame' ) {
           var frame = newFrame()
-          loop from=1 to=8 index="local.j" {
+          bx:loop from=1 to=8 index="local.j" {
             if( i < fileContents.len() ) {
-              frame.frame = 	listAppend( frame.frame, fileContents[ ++i ], chr(10) )
+              frame.frame = 	listAppend( frame.frame, fileContents[ ++i ], char(10) )
             }
           }
           getFrames().append( frame )
         } 
       }
    } else {
-     systemOutput( '[#animationPath#]  not found.', true )
+     println( '[#animationPath#]  not found.' )
    }
   }
 
@@ -46,7 +46,7 @@ component accessors=true {
   }
 
   function execute() {
-    loop from=1 to="#getLoop()#" index="local.p" {
+    bx:loop from=1 to="#getLoop()#" index="local.p" {
       for( var frame in getFrames() ) {
         getMatrix().setMatrix( frame.frame )
         sleep( frame.delay )

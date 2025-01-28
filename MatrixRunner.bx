@@ -1,0 +1,19 @@
+class {
+
+  function main( Array args ){
+    try {
+      animation=""
+      if( len( args ) ) {
+        animation = args[1]
+      }
+      oMatrix = new Matrix( animation )
+    
+      oMatrix.run()
+    } finally {
+      if( !isNull( oMatrix ) ) {
+        oMatrix.shutdown()
+      }
+    }
+  }
+
+}

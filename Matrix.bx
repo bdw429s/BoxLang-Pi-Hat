@@ -1,0 +1,218 @@
+import com.pi4j.Pi4J;
+import java.lang.System;
+import com.pi4j.io.gpio.digital.DigitalState;
+import com.pi4j.io.gpio.digital.DigitalOutput;
+
+class {
+
+  property name="Pi4jContext";
+  //property name="jGPIOUtil";
+  //property name="jShift";
+
+  property name="pData";
+  property name="pClock";
+  property name="pLatch";
+
+  property name="matrix";
+  property name="animations";
+
+  function init( animation='' ) {
+    Pi4jContext = Pi4J.newAutoContext();
+    //jgpio = createObject( 'java', 'com.pi4j.wiringpi.Gpio')
+    //jgpioUtil = createObject( 'java', 'com.pi4j.wiringpi.GpioUtil')
+    //jshift = createObject( 'java', 'com.pi4j.wiringpi.Shift')
+   
+    //jGpio.wiringPiSetup()
+/* 
+    // println("testing...")
+
+    var pin = 14;
+    pTest = Pi4jContext.dout().create(pin);
+    bx:loop times=100 {
+      // sleep( 1000 )
+      // println('pin #pin# high')
+      pTest.high()
+      // sleep( 1000 )
+      // println('pin #pin# low')
+      pTest.low()
+    }
+
+    // println('done')
+    return; */
+  
+    var dataConfig = DigitalOutput.newConfigBuilder(Pi4jContext)
+        .id("data")
+        .name("Data")
+        .address(14)
+        .shutdown(DigitalState.LOW)
+        .provider("gpiod-digital-output")
+        .initial(DigitalState.LOW) 
+        .build();
+    pData = Pi4jContext.dout().create(dataConfig);
+   // pData.addListener(System::out.println);
+
+   var clockConfig = DigitalOutput.newConfigBuilder(Pi4jContext)
+      .id("clock")
+      .name("Clock")
+      .address(15)
+      .shutdown(DigitalState.LOW)
+      .provider("gpiod-digital-output")
+      .initial(DigitalState.LOW)
+      .build();
+    pClock = Pi4jContext.dout().create(clockConfig);
+   // pClock.addListener(System::out.println);
+
+   var clockConfig = DigitalOutput.newConfigBuilder(Pi4jContext)
+      .id("latch")
+      .name("Latch")
+      .address(18)
+      .shutdown(DigitalState.LOW)
+      .initial(DigitalState.LOW)
+      .provider("gpiod-digital-output")
+      .build();
+    pLatch = Pi4jContext.dout().create(clockConfig);
+   // pLatch.addListener(System::out.println);
+
+    //jGpioUtil.export( pData, jGpioUtil.DIRECTION_OUT );
+    //jGpio.pinMode( pData, jGpio.OUTPUT );
+  
+    //jGpioUtil.export( pClock, jGpioUtil.DIRECTION_OUT );
+    //jGpio.pinMode( pClock, jGpio.OUTPUT );
+  
+    //jGpioUtil.export( pLatch, jGpioUtil.DIRECTION_OUT );
+    //jGpio.pinMode( pLatch, jGpio.OUTPUT );
+  
+   // jgpio.digitalWrite( pData, false)
+    //jgpio.digitalWrite( pClock, false)
+    //jgpio.digitalWrite( pLatch, false)
+
+    matrix = ''
+
+    setAnimations( [] )
+    loadAnimations( arguments.animation  )
+
+  }
+  
+  function loadAnimations( animation=''  ) {
+    if( len( animation ) ) {
+        getAnimations().append( new Animation( this, '/home/brad/BoxLang-Pi-Hat/animations/' & arguments.animation ) )
+    } else {
+      var files = directoryList( '/home/brad/BoxLang-Pi-Hat/animations' )
+      for( var file in files ) {
+        getAnimations().append( new Animation( this, file ) )
+      }
+    }
+  }
+
+  public function run() {
+
+    variables.keepRefreshing = true
+    threadName=createUUID()
+
+    thread action="run" name=threadName priority="HIGH" {
+      try {
+        start=getTickCount()
+        count = 0
+          while( variables.keepRefreshing ) {
+            display( matrix  )
+            count++
+          }
+          // println(count/((getTickCount()-start)/1000))
+          clear()
+      } catch( any e ) {
+        e.printStackTrace()
+      }
+    }
+
+    
+    try {
+      
+      for( var oAnimation in getAnimations() ) {
+        oAnimation.execute()
+      }
+  
+    } finally {
+      // Regardless of what errors happen, make sure the thread exits
+      variables.keepRefreshing = false;
+      thread action="join" name=threadName;
+    }
+  }
+  
+  private function display( matrix ) {
+    matrix = trim( matrix )
+    var i = 1
+    // Loop over each row and bang it in
+    for( var row in listToArray( matrix, char(13) & char(10) )) {
+      showRow( i++, row )
+    }
+  }
+  
+  private function showRow( col, rows ) {
+    // Turn on the column. Represent 1, 2, 3, 4... as 1, 10, 11, 100... converted back to base 10, so 1, 2, 4, 8...
+    //var colBits = 2^(col-1)
+  
+    // Turn on the active rows.  Convert the bits (10101010) as base 10 (170)
+    //var rowBits = inputBaseN( rows, 2 )
+    colBits = [0,0,0,0,0,0,0,0]
+    colBits[col] = 1
+    rowBits = rows.trim().listToArray( '' ).reverse()
+    shiftOut( colBits )
+    // sleep(100)
+    shiftOut( rowBits )
+    // sleep(100)
+    // Shift registers are full.  Latch it in!
+    latch()
+    // println( 'latch' )
+    // sleep(100)
+  }
+  
+  private function shiftOut( required array bits ) {
+  
+    // Shift each bit in order
+    for( var thisBit in arguments.bits.reverse() ) {
+
+      //jshift.shiftOut( pdata, pclock, jshift.MSBFIRST, arguments[ thisByte ] )
+
+      if( thisBit ) {
+        // println( 'high' )
+        pData.high()
+      } else {
+        // println( 'low' )
+        pData.low()
+      }
+
+      // sleep(1)
+      pclock.high()
+      // sleep(100)
+      pclock.low()
+      // sleep(100)
+      // println( 'clock' )
+    }
+  
+  }
+  
+  private function latch( ) {
+    pLatch
+      .high();
+      
+    sleep(1)
+    // sleep(100)
+    pLatch.low();
+  }
+  
+  private function clear() {
+    // Shift out 16 bits of zeros
+    shiftOut( [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0] )
+    // Shift registers are full.  Latch it in!
+    latch()
+    // println( 'latch' )
+  }
+
+  function shutdown() {
+    if( Pi4jContext != null ) {
+      Pi4jContext.shutdown();
+    }
+  }
+
+
+}
