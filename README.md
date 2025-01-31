@@ -18,3 +18,21 @@ This project has en emulator to help you test and run your animations before con
 
 See the README.md in the <code>/emulator</code> folder for details
 
+The service to auto-start this is located at `/etc/systemd/system/boxlang.service` with the following contents:
+
+```
+[Unit]
+Description=BoxLang MatrixRunner Service
+
+[Service]
+User=root
+WorkingDirectory=/home/brad/BoxLang-Pi-Hat
+ExecStart=boxlang MatrixRunner.bx
+Restart=always
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
+```

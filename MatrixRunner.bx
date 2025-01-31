@@ -8,8 +8,9 @@ class {
       }
       oMatrix = new Matrix( animation )
     
-      while( true ) 
-        oMatrix.run()
+      do oMatrix.run()
+      while( animation == "" ) 
+        
         
     } finally {
       if( !isNull( oMatrix ) ) {
