@@ -8,7 +8,9 @@ class {
       }
       oMatrix = new Matrix( animation )
     
-      oMatrix.run()
+      while( true ) 
+        oMatrix.run()
+        
     } finally {
       if( !isNull( oMatrix ) ) {
         oMatrix.shutdown()

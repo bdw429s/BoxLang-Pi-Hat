@@ -209,6 +209,8 @@ class {
   }
 
   function shutdown() {
+    clear();
+    
     if( Pi4jContext != null ) {
       Pi4jContext.shutdown();
     }
