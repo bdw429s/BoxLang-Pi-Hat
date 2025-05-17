@@ -1,0 +1,8 @@
+{
+    "app":{
+        "cfengine":"boxlang"
+    },
+    "JVM":{
+        "javaVersion":"openjdk21_jdk_x64_windows_hotspot_jdk-21.0.7+6"
+    }
+}
